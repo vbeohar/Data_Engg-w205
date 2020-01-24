@@ -136,6 +136,7 @@ SELECT count(*) FROM `bigquery-public-data.san_francisco.bikeshare_trips`
 - What is the earliest start date and time and latest end date and time for a trip?
 
 `2013-08-29 09:08:00 UTC` 
+
 `2016-08-31 23:48:00 UTC`
 
 ```sql
