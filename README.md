@@ -167,13 +167,35 @@ FROM `bigquery-public-data.san_francisco.bikeshare_trips`
   * Answer:
   * SQL query:
 
-- Question 2:
-  * Answer:
-  * SQL query:
 
-- Question 3:
-  * Answer:
+- Question 2: ```How many distinct bike stations are there in the San Francisco bikeshare?```
+  * Answer: `74`
   * SQL query:
+    ```sql
+    #standardSQL
+    SELECT count(distinct station_id) FROM `bigquery-public-data.san_francisco.bikeshare_stations`  
+    ```
+  
+  
+- Question 3: ```After the year 2000, show the top-5 stations (along with their zipcodes) that originated the most bike trips (i.e busiest top-5 biketrip originating stations by zip code after the year 2000)?```
+  * Answer: 
+    `num_trips    start_station_id     start_station_name                              zip_code`
+    `13521         73                  Grant Avenue at Columbus Avenue                 94133`
+    `11220         61                  2nd at Townsend                                 94107`
+    `9969          54                  Embarcadero at Bryant                           94105`
+    `9876          69                  San Francisco Caltrain 2 (330 Townsend)         94107`
+    `9789          65                  Townsend at 7th                                 94107`
+
+    ``` sql
+    #standardSQL
+    SELECT count(*) as num_trips, start_station_id, start_station_name, zip_code
+    FROM `bigquery-public-data.san_francisco.bikeshare_trips`
+    WHERE EXTRACT(YEAR from start_date) > 2000
+    group by start_station_id, start_station_name, zip_code
+    order by 1 desc
+    limit 5
+    ```
+
 
 ### Bonus activity queries (optional - not graded - just this section is optional, all other sections are required)
 
