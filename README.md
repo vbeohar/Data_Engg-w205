@@ -163,10 +163,88 @@ FROM `bigquery-public-data.san_francisco.bikeshare_trips`
 ### Questions of your own
 - Make up 3 questions and answer them using the Bay Area Bike Share Trips Data.  These questions MUST be different than any of the questions and queries you ran above.
 
-- Question 1: 
-  * Answer:
+- Question 1: Find out the longest rental time duration (in days) and maximum distance between rental stations (in miles) (Note: the maximum distance trip may not be the same as the maximum time duration trip)
+  * Answer: 
+  
+      `max_distance_traveled	`  `42.42`
+      `max_day_rented_duration	`  `199.89`
+  
+   
+  
+    For this problem, we first make a temporary/custom view using `bigquery-public-data.san_francisco.bikeshare_trips` and `bigquery-public-data.san_francisco.bikeshare_stations` tables and save the result as a view named: `profound-surf-264703.bike_trip_data.bike_trip_distance_duration_station_view` (we will utilize this view to extract further data in the subsequent sections)
+  
   * SQL query:
 
+    ``` sql
+    #standardSQL
+        select 
+            a.trip_id, 
+            round(a.duration_sec, 2) as duration_sec, 
+          round(a.duration_sec/60, 3) as duration_min, 
+          round(a.duration_sec/(60*60), 3) as duration_hour, 
+          round(a.duration_sec/(60*60*24), 2) as duration_day, 
+            a.start_date, 
+            a.start_station_name, 
+            a.start_station_id, 
+            a.end_date, 
+            a.end_station_name, 
+            a.end_station_id, 
+            a.bike_number, 
+            a.zip_code, 
+            a.subscriber_type,
+            EXTRACT(DAYOFWEEK FROM a.start_date) AS dow_int,
+                   CASE EXTRACT(DAYOFWEEK FROM a.start_date)
+                   WHEN 1 THEN "Sunday"
+                   WHEN 2 THEN "Monday"
+                   WHEN 3 THEN "Tuesday"
+                   WHEN 4 THEN "Wednesday"
+                   WHEN 5 THEN "Thursday"
+                   WHEN 6 THEN "Friday"
+                   WHEN 7 THEN "Saturday"
+                   END AS dow_str,
+                   CASE 
+                   WHEN EXTRACT(DAYOFWEEK FROM a.start_date) IN (1, 7) THEN "Weekend"
+                   ELSE "Weekday"
+                   END AS dow_weekday,
+                   EXTRACT(HOUR FROM a.start_date) AS start_hour,
+                   CASE 
+                   WHEN EXTRACT(HOUR FROM a.start_date) <= 5  OR EXTRACT(HOUR FROM a.start_date) >= 23 THEN "Nightime"
+                   WHEN EXTRACT(HOUR FROM a.start_date) >= 6 and EXTRACT(HOUR FROM a.start_date) <= 8 THEN "Morning"
+                   WHEN EXTRACT(HOUR FROM a.start_date) >= 9 and EXTRACT(HOUR FROM a.start_date) <= 10 THEN "Mid Morning"
+                   WHEN EXTRACT(HOUR FROM a.start_date) >= 11 and EXTRACT(HOUR FROM a.start_date) <= 13 THEN "Mid Day"
+                   WHEN EXTRACT(HOUR FROM a.start_date) >= 14 and EXTRACT(HOUR FROM a.start_date) <= 16 THEN "Early Afternoon"
+                   WHEN EXTRACT(HOUR FROM a.start_date) >= 17 and EXTRACT(HOUR FROM a.start_date) <= 19 THEN "Afternoon"
+                   WHEN EXTRACT(HOUR FROM a.start_date) >= 20 and EXTRACT(HOUR FROM a.start_date) <= 22 THEN "Evening"
+                   END AS start_hour_str,
+            b.latitude as start_station_lat, 
+            b.longitude as start_station_long , 
+            b.dockcount as start_station_dockcount, 
+            b.landmark as start_station_landmark, 
+            b.installation_date as start_station_install_date, 
+            c.latitude as end_station_lat, 
+            c.longitude as end_station_long, 
+            ROUND(ST_Distance(ST_GeogPoint(b.longitude, b.latitude), ST_GeogPoint(c.longitude, c.latitude)) * 0.00062137, 2) as distance_between_stations
+
+        FROM 
+            `bigquery-public-data.san_francisco.bikeshare_trips` a, 
+            `bigquery-public-data.san_francisco.bikeshare_stations` b, 
+            `bigquery-public-data.san_francisco.bikeshare_stations` c
+        where 
+            a.start_station_id = b.station_id and 
+            a.end_station_id = c.station_id
+        ORDER BY 
+            distance_between_stations desc, duration_sec desc
+    ```
+
+    Once done, we now use the following query to extract the results: 
+
+    ```sql
+    #standardSQL
+    select 
+      max(distance_between_stations) as max_distance_traveled,  
+      max(duration_day) max_day_rented_duration
+    from `profound-surf-264703.bike_trip_data.bike_trip_distance_duration_station_view`
+    ```
 
 - Question 2: How many distinct bike stations are there in the San Francisco bikeshare?
   * Answer: `74`
