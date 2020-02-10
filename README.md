@@ -322,17 +322,16 @@ from `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info`
    queries and results here, using properly formatted markdown):
 
   * What's the size of this dataset? (i.e., how many trips)
-  
     ```sql
     #standardSQL
-  $ bq query --use_legacy_sql=false "SELECT count(*) FROM \`bigquery-public-data.
-    san_francisco.bikeshare_trips\`"
-    Waiting on bqjob_r13dc1b57a7ebd6e_000001702c6fbeae_1 ... (0s) Current status: DONE   
-    +--------+
-    |  f0_   |
-    +--------+
-    | 983648 |
-    +--------+
+      $ bq query --use_legacy_sql=false "SELECT count(*) FROM \`bigquery-public-data.
+        san_francisco.bikeshare_trips\`"
+        Waiting on bqjob_r13dc1b57a7ebd6e_000001702c6fbeae_1 ... (0s) Current status: DONE   
+        +--------+
+        |  f0_   |
+        +--------+
+        | 983648 |
+        +--------+
     ```
   
 
