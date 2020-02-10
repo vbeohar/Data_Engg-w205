@@ -373,7 +373,23 @@ from `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info`
 2. New Query (Run using bq and paste your SQL query and answer the question in a sentence, using properly formatted markdown):
 
   * How many trips are in the morning vs in the afternoon?
-  
+    ```sql
+    #standardSQL
+     select
+     CASE 
+         WHEN EXTRACT(HOUR FROM start_date) >= 6 and EXTRACT(HOUR FROM start_date) <= 10 THEN "Morning"
+         WHEN EXTRACT(HOUR FROM start_date) >= 14 and EXTRACT(HOUR FROM start_date) <= 19 THEN "Afternoon"
+         END AS start_hour_str,
+     count(*)
+     from `profound-surf-264703.bike_trip_data.bike_trip_distance_duration_station_view`
+     group by start_hour_str
+     having start_hour_str in ('Morning', 'Afternoon')
+    ```
+
+    `Row	start_hour_str	f0_	`
+    `1	    Afternoon       426175`
+    `2	    Morning         359414`
+
 
 
 ### Project Questions
