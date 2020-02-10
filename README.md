@@ -322,14 +322,59 @@ from `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info`
    queries and results here, using properly formatted markdown):
 
   * What's the size of this dataset? (i.e., how many trips)
+  
+    ```sql
+    #standardSQL
+  $ bq query --use_legacy_sql=false "SELECT count(*) FROM \`bigquery-public-data.
+    san_francisco.bikeshare_trips\`"
+    Waiting on bqjob_r13dc1b57a7ebd6e_000001702c6fbeae_1 ... (0s) Current status: DONE   
+    +--------+
+    |  f0_   |
+    +--------+
+    | 983648 |
+    +--------+
+    ```
+  
 
   * What is the earliest start time and latest end time for a trip?
 
+    ```sql
+    #standardSQL
+    $ bq query --use_legacy_sql=false "SELECT min(start_date) FROM \`bigquery-publi
+    c-data.san_francisco.bikeshare_trips\`"
+    Waiting on bqjob_r5e0072daae2940ed_000001702ecee094_1 ... (0s) Current status: DONE   
+    +---------------------+
+    |         f0_         |
+    +---------------------+
+    | 2013-08-29 09:08:00 |
+    +---------------------+
+    
+    $ bq query --use_legacy_sql=false "SELECT max(end_date) FROM \`bigquery-public-
+    data.san_francisco.bikeshare_trips\`"
+    Waiting on bqjob_r5303dfc623e3744e_000001702ecdaccf_1 ... (0s) Current status: DONE   
+    +---------------------+
+    |         f0_         |
+    +---------------------+
+    | 2016-08-31 23:48:00 |
+    +---------------------+
+    ```
+
   * How many bikes are there?
+    ```sql
+    #standardSQL
+    $ bq query --use_legacy_sql=false "SELECT count(distinct bike_number) FROM \`bigquery-public-data.san_francisco.bikeshare_trips\`"
+    Waiting on bqjob_r4dc6923437c9c561_000001702ed3a799_1 ... (0s) Current status: DONE   
+    +-----+
+    | f0_ |
+    +-----+
+    | 700 |
+    +-----+
+    ```
 
 2. New Query (Run using bq and paste your SQL query and answer the question in a sentence, using properly formatted markdown):
 
   * How many trips are in the morning vs in the afternoon?
+  
 
 
 ### Project Questions
