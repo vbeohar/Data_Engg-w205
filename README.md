@@ -404,15 +404,17 @@ below, add as many questions as you need).
 
 - Question 3: Rank trips in buckets of trip times (e.g. trip less than 5 minutes, greater than 5 minutes and less than 10 minutes). Identify which trips are most frequent as percentage of total.
 
-- Question 4: What percentage of trips are over 5 miles?
+- Question 4: Rank trips in buckets of trip durations (e.g. trip less than 2 miles long, greater than 5 miles and less than 10 miles). Identify which trips are most frequent as percentage of total.
 
-- Question 5: What percentage of trips are over 10 minutes in duration?
+- Question 5: What percentage of trips started and ended in the same stations?
 
-- Question 6: What percentage of trips started and ended in the same stations?
+- Question 6: What are the 5 most frequently used stations in the mornings? 
 
-- Question 7: What are the 5 most frequently used stations in the mornings? 
+- Question 7: What are the 5 most frequently used stations in the evenings? 
 
-- Question 8: What are the 5 most frequently used stations in the evenings? 
+- Question 8: Rank top-10 busiest rush-hour times by weekday as percentage of total trips. 
+
+- Question 9: Break down Bike usage by customer type (ratio of total trips by annual subscribers and daily customers)
 
 Identify bike availability at stations during rush hour commute (i.e. calculate the station utilization during rush hour times in mornings and evenings)
 
@@ -482,19 +484,115 @@ answers below.
                 e_duration_station_view\`))) AS Pct_To_Total FROM \`profound-surf-264703.bike_trip_data.bike_trip_distance_duration_
                 station_view\` a  group by trip_month  order by Pct_To_Total desc"
     ```
-- Question 3: Bike usage by customer type (ratio of total trips by annual subscribers and daily customers)
+- Question 3: Break down Bike usage by customer type (ratio of total trips by annual subscribers and daily customers)
   * Answer:
+    ```sql
+    #standardSQL  
+    +-----------+--------------+-----------------+
+    | num_trips | Pct_To_Total | subscriber_type |
+    +-----------+--------------+-----------------+
+    | 846839    | 0.860917     | Subscriber      |
+    +-----------+--------------+-----------------+
+    | 136809    | 0.139083     | Customer        |
+    +-----------+--------------+-----------------+    
+    ```
   * SQL query:
+    ```sql
+    #standardSQL  
+      select
+      count(*) as num_trips, 
+      FORMAT("%f", (count(*) / (SELECT count(*) FROM `profound-surf-264703.bike_trip_data.bike_trip_distance_duration_station_view`))) AS Pct_To_Total,
+      subscriber_type
+    from 
+        `profound-surf-264703.bike_trip_data.bike_trip_distance_duration_station_view`
+      group by
+        subscriber_type
+      order by Pct_To_Total desc
+   ```
   
-- Question 4: 5 Most overutilized and underutilized stations (total docks present and docks not used)
+- Question 4: Rank trips in descending order buckets of trip times (e.g. trip less than 5 minutes, greater than 5 minutes and less than 10 minutes). Identify which trips are most frequent as percentage of total.
   * Answer:
+    ```sql
+    #standardSQL   
+    +------------------------+--------------+
+    | duration_min_slots     | Pct_To_Total |
+    +------------------------+--------------+
+    | 5 < duration <=10 min  | 0.420255     |
+    +------------------------+--------------+
+    | 10 < duration <=20 min | 0.302875     |
+    +------------------------+--------------+
+    | 3 < duration <=5 min   | 0.147016     |
+    +------------------------+--------------+
+    | 20 < duration <=30 min | 0.034393     |
+    +------------------------+--------------+
+    | 3 min or less          | 0.031651     |
+    +------------------------+--------------+
+    | >30 min                | 0.031231     |
+    +------------------------+--------------+
+  ```
   * SQL query:
+    ```sql
+    #standardSQL        
+        select            	
+         CASE 	
+                   WHEN duration_min <= 3 THEN "3 min or less"	
+                   WHEN duration_min > 3  and  duration_min <= 5 THEN "3 minutes < duration <= 5 minutes"	
+                   WHEN duration_min > 5  and  duration_min <= 10 THEN "5 minutes < duration <= 10 minutes"	
+                   WHEN duration_min > 10  and  duration_min <= 20 THEN "10 minutes < duration <= 20 minutes"	
+                   WHEN duration_min > 20  and  duration_min <= 30 THEN "20 minutes < duration <= 30 minutes"	
+                   WHEN duration_min > 30 THEN "> 30 min"	
+                   END AS duration_min_slots,	
+        FORMAT("%f", (count(*) / (SELECT count(*) FROM `profound-surf-264703.bike_trip_data.bike_trip_distance_duration_station_view`))) AS Pct_To_Total                   	
+        FROM 	
+            `profound-surf-264703.bike_trip_data.bike_trip_distance_duration_station_view` a	
+        where 	
+              start_station_name <> end_station_name	
+        group by duration_min_slots	
+        ORDER BY Pct_To_Total desc	  
+      ```
+  
 
-- Question 4: 5 Most overutilized and underutilized stations (total docks present and docks not used)
+- Question 4: Rank trips in buckets of trip durations (e.g. trip less than 2 miles long, greater than 5 miles and less than 10 miles). Identify which trips are most frequent as percentage of total.
   * Answer:
+    ```sql
+    #standardSQL 
+    +---------------------------------+--------------+
+    | trip_distance                   | Pct_To_Total |
+    +---------------------------------+--------------+
+    | less than 2 miles               | 0.962615     |
+    +---------------------------------+--------------+
+    | 2 miles < distance <= 5 miles   | 0.004580     |
+    +---------------------------------+--------------+
+    | 5 miles < distance <= 10 miles  | 0.000116     |
+    +---------------------------------+--------------+
+    | 20 miles < distance <= 30 miles | 0.000049     |
+    +---------------------------------+--------------+
+    | 10 miles < distance <= 20 miles | 0.000035     |
+    +---------------------------------+--------------+
+    | > 30 miles                      | 0.000026     |
+    +---------------------------------+--------------+    
+    ```
   * SQL query:
-
-
+    ```sql
+    #standardSQL   
+        select            	
+         CASE 	
+                   WHEN distance_between_stations <= 2 THEN "less than 2 miles"	
+                   WHEN distance_between_stations > 2  and  distance_between_stations <= 5 THEN "2 miles < distance <= 5 miles"	
+                   WHEN distance_between_stations > 5  and  distance_between_stations <= 10 THEN "5 miles < distance <= 10 miles"	
+                   WHEN distance_between_stations > 10  and  distance_between_stations <= 20 THEN "10 miles < distance <= 20 miles"	
+                   WHEN distance_between_stations > 20  and  distance_between_stations <= 30 THEN "20 miles < distance <= 30 miles"	
+                   WHEN distance_between_stations > 30 THEN "> 30 miles"	
+                   END AS trip_distance,	
+        FORMAT("%f", (count(*) / (SELECT count(*) FROM `profound-surf-264703.bike_trip_data.bike_trip_distance_duration_station_view`))) AS Pct_To_Total                   	
+        FROM 	
+            `profound-surf-264703.bike_trip_data.bike_trip_distance_duration_station_view` a	
+        where 	
+              start_station_name <> end_station_name	
+              and distance_between_stations <> 0
+        group by trip_distance	
+        ORDER BY Pct_To_Total desc	  
+    ```
 - ...
 
 - Question n:
