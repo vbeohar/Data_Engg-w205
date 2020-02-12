@@ -189,11 +189,11 @@ FROM `bigquery-public-data.san_francisco.bikeshare_trips`
             a.end_date, 
             a.end_station_name, 
             a.end_station_id, 
-            a.bike_number, 
+            abs(a.start_station_id - a.end_station_id)
             a.zip_code, 
             a.subscriber_type,
             EXTRACT(DAYOFWEEK FROM a.start_date) AS dow_int,
-                   CASE EXTRACT(DAYOFWEEK FROM a.start_date)
+            CASE EXTRACT(DAYOFWEEK FROM a.start_date)
                    WHEN 1 THEN "Sunday"
                    WHEN 2 THEN "Monday"
                    WHEN 3 THEN "Tuesday"
@@ -387,7 +387,9 @@ from `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info`
     ```
 
     `Row	start_hour_str	f0_	`
+    
     `1	    Afternoon       426175`
+    
     `2	    Morning         359414`
 
 
@@ -396,13 +398,24 @@ from `bigquery-public-data.san_francisco_bikeshare.bikeshare_station_info`
 Identify the main questions you'll need to answer to make recommendations (list
 below, add as many questions as you need).
 
-- Question 1: 
+- Question 1: Rank the busiest days of the week by total percentage of use.   
 
-- Question 2: 
+- Question 2: Rank the months of year by total percentage of use.
 
-- Question 3: 
+- Question 3: Rank trips in buckets of trip times (e.g. trip less than 5 minutes, greater than 5 minutes and less than 10 minutes). Identify which trips are most frequent as percentage of total.
 
-- Question 4: 
+- Question 4: What percentage of trips are over 5 miles?
+
+- Question 5: What percentage of trips are over 10 minutes in duration?
+
+- Question 6: What percentage of trips started and ended in the same stations?
+
+- Question 7: What are the 5 most frequently used stations in the mornings? 
+
+- Question 8: What are the 5 most frequently used stations in the evenings? 
+
+Identify bike availability at stations during rush hour commute (i.e. calculate the station utilization during rush hour times in mornings and evenings)
+
 
 - ...
 
@@ -414,22 +427,74 @@ Answer at least 4 of the questions you identified above You can use either
 BigQuery or the bq command line tool.  Paste your questions, queries and
 answers below.
 
-- Question 1: 
+- Question 1: Rank the busiest days of the week by total percentage of use.   
   * Answer:
-  * SQL query:
+    ```sql
+    #standardSQL
+    +-----------+--------------+
+    |  dow_str  | Pct_To_Total |
+    +-----------+--------------+
+    | Tuesday   | 0.187471     |
+    | Wednesday | 0.183772     |
+    | Thursday  | 0.179849     |
+    | Monday    | 0.172762     |
+    | Friday    | 0.162636     |
+    | Saturday  | 0.061281     |
+    | Sunday    | 0.052229     |
+    +-----------+--------------+
+    ```
+    
+  * SQL query: 
+      ```sql
+    #standardSQL
+               $ bq query --use_legacy_sql=false "SELECT a1.dow_str, FORMAT(\"%f\", (count(*) /
+                 (SELECT count(*) FROM \`profound-surf-264703.bike_trip_data.bike_trip_distance_duration_station_view\`))) AS Pct_To
+                _Total FROM \`profound-surf-264703.bike_trip_data.bike_trip_distance_duration_station_view\` a1 group by a1.dow_str 
+                order by Pct_To_Total desc"
+      ```
 
-- Question 2:
+- Question 2: Rank the months of year by total percentage of use.
   * Answer:
-  * SQL query:
-
-- Question 3:
+    ```sql
+    #standardSQL  
+    +------------+--------------+
+    | trip_month | Pct_To_Total |
+    +------------+--------------+
+    |          8 | 0.097165     |
+    |         10 | 0.095947     |
+    |          6 | 0.093196     |
+    |          7 | 0.091027     |
+    |          9 | 0.088773     |
+    |          5 | 0.087800     |
+    |          4 | 0.085596     |
+    |          3 | 0.083136     |
+    |         11 | 0.074306     |
+    |          1 | 0.072981     |
+    |          2 | 0.071148     |
+    |         12 | 0.058925     |
+    +------------+--------------+
+    ```
+  * SQL query: 
+    ```sql
+    #standardSQL
+              $ bq query --use_legacy_sql=false  "SELECT  EXTRACT(MONTH FROM a.start_date) as 
+                trip_month, FORMAT(\"%f\", (count(*) / (SELECT count(*) FROM \`profound-surf-264703.bike_trip_data.bike_trip_distanc
+                e_duration_station_view\`))) AS Pct_To_Total FROM \`profound-surf-264703.bike_trip_data.bike_trip_distance_duration_
+                station_view\` a  group by trip_month  order by Pct_To_Total desc"
+    ```
+- Question 3: Bike usage by customer type (ratio of total trips by annual subscribers and daily customers)
   * Answer:
   * SQL query:
   
-- Question 4:
+- Question 4: 5 Most overutilized and underutilized stations (total docks present and docks not used)
   * Answer:
   * SQL query:
-  
+
+- Question 4: 5 Most overutilized and underutilized stations (total docks present and docks not used)
+  * Answer:
+  * SQL query:
+
+
 - ...
 
 - Question n:
