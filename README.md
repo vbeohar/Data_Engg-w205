@@ -552,7 +552,7 @@ answers below.
       ```
   
 
-- Question 4: Rank trips in buckets of trip durations (e.g. trip less than 2 miles long, greater than 5 miles and less than 10 miles). Identify which trips are most frequent as percentage of total.
+- Question 5: Rank trips in buckets of trip durations (e.g. trip less than 2 miles long, greater than 5 miles and less than 10 miles). Identify which trips are most frequent as percentage of total.
   * Answer:
     ```sql
     #standardSQL 
